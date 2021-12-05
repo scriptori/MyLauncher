@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
-import me.scriptori.mylauncher.MyLauncherActivity.Companion.currentDeniedList
 import me.scriptori.mylauncher.R
 import me.scriptori.mylauncher.databinding.FragmentAppDrawerBinding
 import me.scriptori.mylauncher.model.ApplicationModel
@@ -17,9 +16,15 @@ import me.scriptori.mylauncher.retrofit.DenyListRequest
 import me.scriptori.mylauncher.retrofit.DenyListResponse
 import me.scriptori.mylauncher.ui.recyclerview.ApplicationViewAdapter
 import me.scriptori.mylauncher.util.Constants
+import me.scriptori.mylauncher.util.DenyList
+import me.scriptori.mylauncher.util.DenyList.currentDeniedList
 
 
 class ApplicationDrawerFragment : Fragment() {
+    companion object {
+        internal var TAG = ApplicationDrawerFragment::class.java.simpleName
+    }
+
     private lateinit var binding: FragmentAppDrawerBinding
 
     private var adapter = ApplicationViewAdapter()
@@ -27,9 +32,9 @@ class ApplicationDrawerFragment : Fragment() {
     internal val denyListViewModel: DenyListViewModel by lazy {
         DenyListViewModel().also {
             context?.let { ctx ->
-                if (DenyListResponse.getDenyListFile(ctx).exists()) {
+                if (DenyList.getDenyListFile(ctx).exists()) {
                     it.denyListResponse.value = DenyListResponse(
-                        DenyListResponse.readFromFile(ctx).denylist
+                        DenyList.readFromFile(ctx).denylist
                     )
                 } else {
                     DenyListRequest(it).getDenyList()
@@ -89,7 +94,7 @@ class ApplicationDrawerFragment : Fragment() {
             if (!currentDeniedList.containsAll(it.denylist)) {
                 currentDeniedList = it.denylist
                 context?.let { ctx ->
-                    DenyListResponse.writeToFile(ctx, it)
+                    DenyList.writeToFile(ctx, it)
                 }
             }
             // Update the adapter item including the deny list
