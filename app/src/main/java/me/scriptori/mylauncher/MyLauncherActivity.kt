@@ -9,12 +9,16 @@ import me.scriptori.mylauncher.receiver.AdminBroadcastReceiver
 import me.scriptori.mylauncher.ui.fragments.ApplicationDrawerFragment
 
 /**
- * This is main activity
+ * The main activity
+ * @see [AppCompatActivity]
  */
 class MyLauncherActivity : AppCompatActivity() {
     internal lateinit var adminComponentName: ComponentName
     internal lateinit var dpm: DevicePolicyManager
 
+    /**
+     * See [AppCompatActivity.onCreate]
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -22,8 +26,8 @@ class MyLauncherActivity : AppCompatActivity() {
         adminComponentName = ComponentName(this, AdminBroadcastReceiver::class.java)
         dpm = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         if (dpm.isDeviceOwnerApp(packageName)) {
-            dpm.setKeyguardDisabled(adminComponentName, true);
-            dpm.setStatusBarDisabled(adminComponentName, true);
+            dpm.setKeyguardDisabled(adminComponentName, true)
+            dpm.setStatusBarDisabled(adminComponentName, true)
         }
 
         applyFragment()
@@ -33,10 +37,17 @@ class MyLauncherActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * See [AppCompatActivity.onBackPressed]
+     */
     override fun onBackPressed() {
         applyFragment()
     }
 
+    /**
+     * Replace the main activity layout app container with the [ApplicationDrawerFragment] only
+     * if the fragment is not visible
+     */
     private fun applyFragment() {
         supportFragmentManager.let { fm ->
             if (fm.findFragmentByTag(ApplicationDrawerFragment.TAG) == null) {
