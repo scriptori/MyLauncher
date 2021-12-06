@@ -22,7 +22,12 @@ object DenyPackageHandler {
     var currentDeniedList = mutableListOf<String>()
 
     private const val JSON_FILE = "deny_packages.json"
-    private val defaultDenyPackageFile = File("src/main/assets/default_deny_package.json")
+    private const val DEFAULT_DENY_PACKAGES =
+        "{\"denylist\": [" +
+                "\"com.android.chrome\"," +
+                "\"com.google.android.apps.maps\"," +
+                "\"com.android.dialer\"," +
+                "\"com.google.android.gm\"]}"
 
     private val gson: Gson
         get() = GsonBuilder().setPrettyPrinting().create()
@@ -36,7 +41,7 @@ object DenyPackageHandler {
      * @see [me.scriptori.mylauncher.retrofit.DenyListResponse]
      */
     fun defaultDenyResponse(): DenyListResponse = gson.fromJson(
-        BufferedReader(FileReader(defaultDenyPackageFile)),
+        DEFAULT_DENY_PACKAGES,
         DenyListResponse::class.java
     )
 

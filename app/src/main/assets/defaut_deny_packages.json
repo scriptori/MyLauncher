@@ -1,8 +1,0 @@
-{
-  "denylist": [
-    "com.android.chrome",
-    "com.google.android.apps.maps",
-    "com.android.dialer",
-    "com.google.android.gm"
-  ]
-}

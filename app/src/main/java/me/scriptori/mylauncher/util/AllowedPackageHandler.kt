@@ -9,8 +9,8 @@ import me.scriptori.mylauncher.model.ApplicationModel
  * The allowed package handler object is an utility object class that handles the retrieval of the
  * package list defined in a json format.
  */
-object AllowedPackagerHandler {
-    const val APP_PACKAGE_NAME = "me.scriptori.mylauncher"
+object AllowedPackageHandler {
+    internal const val APP_PACKAGE_NAME = "me.scriptori.mylauncher"
 
     /**
      * Retrieves the list of [ApplicationModel] objects in alphabetic order to be displayed

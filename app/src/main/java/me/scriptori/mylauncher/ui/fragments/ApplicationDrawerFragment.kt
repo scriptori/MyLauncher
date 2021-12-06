@@ -14,7 +14,7 @@ import me.scriptori.mylauncher.model.DenyListViewModel
 import me.scriptori.mylauncher.retrofit.DenyListRequest
 import me.scriptori.mylauncher.retrofit.DenyListResponse
 import me.scriptori.mylauncher.ui.recyclerview.ApplicationViewAdapter
-import me.scriptori.mylauncher.util.AllowedPackagerHandler
+import me.scriptori.mylauncher.util.AllowedPackageHandler
 import me.scriptori.mylauncher.util.DenyPackageHandler
 import me.scriptori.mylauncher.util.DenyPackageHandler.currentDeniedList
 
@@ -49,7 +49,7 @@ class ApplicationDrawerFragment : Fragment() {
     @SuppressLint("NotifyDataSetChanged")
     /**
      * See [Fragment.onCreate]
-     * @see [AllowedPackagerHandler.getAllowedApps]
+     * @see [AllowedPackageHandler.getAllowedApps]
      */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -64,7 +64,7 @@ class ApplicationDrawerFragment : Fragment() {
             // Update the adapter item including the deny list
             adapter.apply {
                 applicationList.clear()
-                applicationList.addAll(AllowedPackagerHandler.getAllowedApps(ctx))
+                applicationList.addAll(AllowedPackageHandler.getAllowedApps(ctx))
                 notifyDataSetChanged()
             }
         }
