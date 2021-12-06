@@ -1,7 +1,7 @@
 package me.scriptori.mylauncher.ui.fragments
 
 import android.annotation.SuppressLint
-import android.content.Intent
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,16 +10,17 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import me.scriptori.mylauncher.R
 import me.scriptori.mylauncher.databinding.FragmentAppDrawerBinding
-import me.scriptori.mylauncher.model.ApplicationModel
 import me.scriptori.mylauncher.model.DenyListViewModel
 import me.scriptori.mylauncher.retrofit.DenyListRequest
 import me.scriptori.mylauncher.retrofit.DenyListResponse
 import me.scriptori.mylauncher.ui.recyclerview.ApplicationViewAdapter
-import me.scriptori.mylauncher.util.Constants
-import me.scriptori.mylauncher.util.DenyList
-import me.scriptori.mylauncher.util.DenyList.currentDeniedList
+import me.scriptori.mylauncher.util.AllowedPackagerHandler
+import me.scriptori.mylauncher.util.DenyPackageHandler
+import me.scriptori.mylauncher.util.DenyPackageHandler.currentDeniedList
 
-
+/**
+ * This is the fragment for the application drawer.
+ */
 class ApplicationDrawerFragment : Fragment() {
     companion object {
         internal var TAG = ApplicationDrawerFragment::class.java.simpleName
@@ -29,54 +30,13 @@ class ApplicationDrawerFragment : Fragment() {
 
     private var adapter = ApplicationViewAdapter()
 
-    internal val denyListViewModel: DenyListViewModel by lazy {
-        DenyListViewModel().also {
-            context?.let { ctx ->
-                if (DenyList.getDenyListFile(ctx).exists()) {
-                    it.denyListResponse.value = DenyListResponse(
-                        DenyList.readFromFile(ctx).denylist
-                    )
-                } else {
-                    DenyListRequest(it).getDenyList()
-                }
-            } ?: run {
-                DenyListRequest(it).getDenyList()
-            }
-        }
+    private val denyListViewModel: DenyListViewModel by lazy {
+        DenyListViewModel()
     }
 
-    private val appModel: MutableList<ApplicationModel>
-        get() {
-            val appModelList = mutableListOf<ApplicationModel>()
-            activity?.packageManager?.let { pm ->
-                val intent = Intent(Intent.ACTION_MAIN, null).also {
-                    it.addCategory(Intent.CATEGORY_LAUNCHER)
-                }
-                pm.queryIntentActivities(intent, 0).forEach {
-                    val packageName = it.activityInfo.packageName
-                    if ( // Hiding denied application
-                        !currentDeniedList.contains(packageName) &&
-                        // Hiding system application
-                        pm.getLaunchIntentForPackage(packageName) != null &&
-                        // Hiding launcher application
-                        packageName != Constants.APP_PACKAGE_NAME
-                    ) {
-                        // adding application information to the available app list
-                        appModelList.add(
-                            ApplicationModel(
-                                it.loadLabel(pm).toString(),
-                                it.activityInfo.packageName,
-                                it.activityInfo.loadIcon(pm)
-                            )
-                        )
-                    }
-                }
-            }
-            // Sorting the list alphabetically
-            appModelList.sortBy { it.label }
-            return appModelList
-        }
-
+    /**
+     * See [Fragment.onCreateView]
+     */
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -87,29 +47,54 @@ class ApplicationDrawerFragment : Fragment() {
     }
 
     @SuppressLint("NotifyDataSetChanged")
+    /**
+     * See [Fragment.onCreate]
+     * @see [AllowedPackagerHandler.getAllowedApps]
+     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val ctx = view.context
+        // start observing the deny list package model
         denyListViewModel.denyListResponse.observeForever {
             // Save deny list to a json file if the content doesn't match
             if (!currentDeniedList.containsAll(it.denylist)) {
                 currentDeniedList = it.denylist
-                context?.let { ctx ->
-                    DenyList.writeToFile(ctx, it)
-                }
+                DenyPackageHandler.writeToFile(ctx, it)
             }
             // Update the adapter item including the deny list
             adapter.apply {
                 applicationList.clear()
-                applicationList.addAll(appModel)
+                applicationList.addAll(AllowedPackagerHandler.getAllowedApps(ctx))
                 notifyDataSetChanged()
             }
         }
+        // populate the deny list model
+        populateDenyListModel(ctx)
+        // populate the recyclerview
         binding.appsRecyclerView.also { rv ->
             rv.layoutManager = GridLayoutManager(
-                context,
-                context?.resources?.getInteger(R.integer.number_columns) ?: 3
+                ctx,
+                ctx.resources.getInteger(R.integer.number_columns)
             )
             rv.adapter = adapter
+        }
+    }
+
+    /**
+     * Populate the deny list model
+     *
+     * @param context - Application context
+     */
+    private fun populateDenyListModel(context: Context) {
+        if (DenyPackageHandler.getDenyListFile(context).exists()) {
+            // Use the deny package json file from the device
+            denyListViewModel.denyListResponse.value = DenyListResponse(
+                DenyPackageHandler.readFromFile(context).denylist
+            )
+        } else {
+            // The deny package json file doesn't exist in the device.
+            // Make a request to retrieve form the server URL
+            DenyListRequest(denyListViewModel).getDenyList()
         }
     }
 }

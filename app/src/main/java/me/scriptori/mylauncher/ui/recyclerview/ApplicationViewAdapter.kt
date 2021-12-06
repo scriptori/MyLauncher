@@ -15,6 +15,9 @@ class ApplicationViewAdapter(
     var applicationList: MutableList<ApplicationModel> = mutableListOf()
 ) : RecyclerView.Adapter<ApplicationViewAdapter.ApplicationsViewHolder>() {
 
+    /**
+     * See **[RecyclerView.Adapter.onCreateViewHolder]**
+     */
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ApplicationsViewHolder {
         val binding = RecyclerviewItemBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
@@ -22,6 +25,9 @@ class ApplicationViewAdapter(
         return ApplicationsViewHolder(binding)
     }
 
+    /**
+     * See [RecyclerView.Adapter.onBindViewHolder]
+     */
     override fun onBindViewHolder(holder: ApplicationsViewHolder, position: Int) {
         val model = applicationList[position]
         holder.binding.apply {
@@ -48,6 +54,9 @@ class ApplicationViewAdapter(
         }
     }
 
+    /**
+     * See [RecyclerView.Adapter.getItemCount]
+     */
     override fun getItemCount(): Int {
         return applicationList.size
     }
