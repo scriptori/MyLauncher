@@ -35,7 +35,7 @@ class DenyListRequest(private val denyListViewModel: DenyListViewModel) {
             ) {
                 if (denyListResponse.code() == 200) {
                     denyListResponse.body()?.let { body ->
-                        denyListViewModel.denyListResponse.value = body
+                        denyListViewModel.updateDenyListResponse(body)
                     }
                 } else {
                     handleFailure()
@@ -52,7 +52,7 @@ class DenyListRequest(private val denyListViewModel: DenyListViewModel) {
     private fun handleFailure() {
         Log.d(TAG, "Handling HTTP request failure")
         // Apply the default deny package list from the internal json file
-        denyListViewModel.denyListResponse.value = DenyPackageHandler.defaultDenyResponse()
+        denyListViewModel.updateDenyListResponse(DenyPackageHandler.defaultDenyResponse())
     }
 
     /**

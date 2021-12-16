@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import me.scriptori.mylauncher.R
 import me.scriptori.mylauncher.databinding.FragmentAppDrawerBinding
@@ -31,7 +32,7 @@ class ApplicationDrawerFragment : Fragment() {
     private var adapter = ApplicationViewAdapter()
 
     private val denyListViewModel: DenyListViewModel by lazy {
-        DenyListViewModel()
+        ViewModelProvider(this)[DenyListViewModel::class.java]
     }
 
     /**
@@ -86,15 +87,17 @@ class ApplicationDrawerFragment : Fragment() {
      * @param context - Application context
      */
     private fun populateDenyListModel(context: Context) {
-        if (DenyPackageHandler.getDenyListFile(context).exists()) {
-            // Use the deny package json file from the device
-            denyListViewModel.denyListResponse.value = DenyListResponse(
-                DenyPackageHandler.readFromFile(context).denylist
-            )
-        } else {
-            // The deny package json file doesn't exist in the device.
-            // Make a request to retrieve form the server URL
-            DenyListRequest(denyListViewModel).getDenyList()
+        if ((denyListViewModel.denyListResponse.value as DenyListResponse).denylist.isEmpty()) {
+            if (DenyPackageHandler.getDenyListFile(context).exists()) {
+                // Use the deny package json file from the device
+                denyListViewModel.updateDenyListResponse(
+                    DenyListResponse(DenyPackageHandler.readFromFile(context).denylist)
+                )
+            } else {
+                // The deny package json file doesn't exist in the device.
+                // Make a request to retrieve form the server URL
+                DenyListRequest(denyListViewModel).getDenyList()
+            }
         }
     }
 }
